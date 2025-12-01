@@ -1,6 +1,6 @@
-## My solutions for the 2024 Advent of Code challenges in Typescript
+## My solutions for the Advent of Code challenges in Typescript
 
-### https://adventofcode.com/2024/
+### https://adventofcode.com/
 
 Uses vite
 
@@ -8,3 +8,4 @@ Uses vite
 npm install
 npm run dev
 ```
+
