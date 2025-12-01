@@ -16,4 +16,3 @@ const partTwo = solvePartTwo();
 
 document.getElementById("partOne")?.appendChild(document.createTextNode(partOne.toString()));
 document.getElementById("partTwo")?.appendChild(document.createTextNode(partTwo.toString()));
-
