@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "new": "node scripts/new-day.mjs"
   },
   "devDependencies": {
     "prettier": "^3.4.1",
