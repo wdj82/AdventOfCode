@@ -1,12 +1,12 @@
 // Advent of Code day 3
 // https://adventofcode.com/2025/day/3
 
-import { rawInput } from "./rawInput";
+// import { rawInput } from "./rawInput";
 
-// const rawInput = `987654321111111
-// 811111111111119
-// 234234234234278
-// 818181911112111`;
+const rawInput = `987654321111111
+811111111111119
+234234234234278
+818181911112111`;
 
 const banks = rawInput.split("\n").map((line) => line.split(""));
 
@@ -45,6 +45,7 @@ function solvePartOne() {
   return total;
 }
 
+// uses a monotonic stack to solve
 function solvePartTwo() {
   let total = 0;
   const numOfBatteries = 12;

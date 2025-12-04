@@ -1,18 +1,18 @@
 // Advent of Code day 1
 // https://adventofcode.com/2025/day/1
 
-import { rawInput } from "./rawInput";
+// import { rawInput } from "./rawInput";
 
-// const rawInput = `L68
-// L30
-// R48
-// L5
-// R60
-// L55
-// L1
-// L99
-// R14
-// L82`;
+const rawInput = `L68
+L30
+R48
+L5
+R60
+L55
+L1
+L99
+R14
+L82`;
 
 const instructions = rawInput.split("\n").map((line) => ({ dir: line[0], rotations: Number(line.slice(1)) }));
 

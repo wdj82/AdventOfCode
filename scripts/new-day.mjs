@@ -65,8 +65,7 @@ document.getElementById("partTwo")?.appendChild(document.createTextNode(partTwo.
 fs.writeFileSync(path.join(basePath, `day${dayPadded}.ts`), ts);
 
 // rawInput placeholder file
-const raw = `export const rawInput = \`
-\`;`;
+const raw = `export const rawInput = \`\`;`;
 
 fs.writeFileSync(path.join(basePath, "rawInput.ts"), raw);
 console.log(`Created Advent of Code folder: src/${year}/day${dayPadded}`);
