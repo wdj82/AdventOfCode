@@ -45,7 +45,9 @@ fs.writeFileSync(path.join(basePath, "index.html"), html);
 const ts = `// Advent of Code day ${parseInt(day)}
 // https://adventofcode.com/${year}/day/${parseInt(day)}
 
-import { rawInput } from "./rawInput";
+// import { rawInput } from "./rawInput";
+
+const rawInput = \`\`;
 
 function solvePartOne() {
   return 0;
