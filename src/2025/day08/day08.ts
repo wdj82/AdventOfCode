@@ -3,6 +3,7 @@
 
 // import { rawInput } from "./rawInput";
 
+const PART_ONE_NUM_OF_CONNECTIONS = 10; // is 1000 for the real input
 const rawInput = `162,817,812
 57,618,57
 906,360,560
@@ -24,120 +25,137 @@ const rawInput = `162,817,812
 984,92,344
 425,690,689`;
 
-const lights = rawInput.split("\n").map((line) => line.split(",").map(Number));
-
-console.log({ lights });
-
-type Point = { x: number; y: number; z: number };
+const junctions = rawInput.split("\n").map((line) => line.split(",").map(Number));
 
 function closestDistance(p1: number[], p2: number[]) {
   return (p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2 + (p1[2] - p2[2]) ** 2;
 }
 
-function insertSorted(
-  array: { distance: number; p1: string; p2: string }[],
-  value: { distance: number; p1: string; p2: string },
-) {
-  if (array.length === 0) {
-    array.push(value);
-    return;
-  }
+function findCircuit(circuits: string[][], point1: string, point2: string) {
+  let circuit1: string[] = [];
+  let circuit2: string[] = [];
+  let index1 = 0;
+  let index2 = 0;
 
-  let left = 0;
-  let right = array.length - 1;
-
-  while (left <= right) {
-    let mid = Math.floor((left + right) / 2);
-    if (value.distance < array[mid].distance) {
-      right = mid - 1;
-    } else {
-      left = mid + 1;
-    }
-  }
-  array.splice(left, 0, value);
-}
-
-function findCircuit(circuits: string[][], point: string) {
   for (let i = 0; i < circuits.length; i++) {
     const circuit = circuits[i] ?? [];
-    console.log({ circuit });
-    if (circuit.includes(point)) {
-      return { circuit, i, index: circuit.findIndex((c) => c === point) };
+
+    if (circuit.includes(point1)) {
+      circuit1 = circuit;
+      index1 = i;
+    } else if (circuit.includes(point2)) {
+      circuit2 = circuit;
+      index2 = i;
     }
+
+    if (circuit1.length > 0 && circuit2.length > 0) break;
   }
-  throw new Error("not found");
+
+  return { circuit1, circuit2, index1, index2 };
 }
 
 function solvePartOne() {
   const distances: { distance: number; p1: string; p2: string }[] = [];
-  const circuits = new Map<string, string[]>();
-  const lightsMap: string[][] = [];
+  let circuits: string[][] = [];
 
-  for (let i = 0; i < lights.length - 1; i++) {
-    const key1 = `${lights[i][0]},${lights[i][1]},${lights[i][2]}`;
-
-    circuits.set(key1, []);
-    lightsMap.push([key1]);
-
-    for (let j = i + 1; j < lights.length; j++) {
-      const key2 = `${lights[j][0]},${lights[j][1]},${lights[j][2]}`;
-      const distance = closestDistance(lights[i], lights[j]);
-
-      insertSorted(distances, { distance, p1: key1, p2: key2 });
-    }
+  // all the junctions start on their own circuits
+  for (let i = 0; i < junctions.length; i++) {
+    const key = `${junctions[i][0]},${junctions[i][1]},${junctions[i][2]}`;
+    circuits.push([key]);
   }
 
-  console.log(distances);
-  console.log({ lightsMap });
+  // find all the paths from each junction box to every other junction box
+  for (let i = 0; i < junctions.length - 1; i++) {
+    const key1 = `${junctions[i][0]},${junctions[i][1]},${junctions[i][2]}`;
 
-  for (let i = 0; i < 10; i++) {
+    for (let j = i + 1; j < junctions.length; j++) {
+      const key2 = `${junctions[j][0]},${junctions[j][1]},${junctions[j][2]}`;
+      const distance = closestDistance(junctions[i], junctions[j]);
+
+      distances.push({ distance, p1: key1, p2: key2 });
+    }
+  }
+  // sort so we start with the shortest distance
+  distances.sort((a, b) => a.distance - b.distance);
+
+  // combine junctions into circuits starting with the closest
+  for (let i = 0; i < PART_ONE_NUM_OF_CONNECTIONS; i++) {
     const { p1, p2 } = distances[i];
-    console.log(p1, " - ", p2);
 
-    const { circuit: circuit1, i: index1, index: innerIndex1 } = findCircuit(lightsMap, p1);
-    const { circuit: circuit2, i: index2, index: innerIndex2 } = findCircuit(lightsMap, p2);
-
-    // const first = circuits.get(p1) ?? [];
-    // const second = circuits.get(p2) ?? [];
-    // console.log("connected 1: ", [...first]);
-    // console.log("connected 2: ", [...second]);
-
-    // if (!first.includes(p2)) {
-    //   console.log("p1 and p2 are not connected - connecting");
-    //   first.push(p2);
-    //   circuits.set(p1, first);
-    //   second.push(p1);
-    //   circuits.set(p2, second);
-    // }
+    const { circuit1, circuit2, index1, index2 } = findCircuit(circuits, p1, p2);
 
     if (index1 === index2) {
-      console.log("both already in the same circuit - do nothing");
+      // both already in the same circuit - do nothing
       continue;
     }
 
-    if (circuit1.length > 0 && circuit2.length > 0) {
-      console.log("both are part of circuits - combining");
-      lightsMap.splice(index1, 1);
-      lightsMap.splice(index2, 1);
-      lightsMap.push([...circuit1, ...circuit2]);
-    } else if (circuit1.length === 0) {
-      console.log("merge p1 to p2s circuit");
-      lightsMap.splice(index1, 1);
-      lightsMap[index2].push(...circuit1);
-    } else {
-      console.log("merge p2 to p1s circuit");
-      lightsMap.splice(index2, 1);
-      lightsMap[index1].push(...circuit2);
-    }
+    // remove the two circuits that are about to be combined
+    circuits = circuits.filter((value) => !value.includes(p1) && !value.includes(p2));
+    // combine the two circuits into a new circuit
+    circuits.push([...circuit1, ...circuit2]);
   }
 
-  console.log("lightsMap: ", lightsMap);
-  console.log({ circuits });
-  return 0;
+  // find the three biggest circuits
+  let max1 = 0;
+  let max2 = 0;
+  let max3 = 0;
+
+  circuits.forEach((lights) => {
+    const length = lights.length;
+    if (length > max1) {
+      max3 = max2;
+      max2 = max1;
+      max1 = length;
+    } else if (length > max2) {
+      max3 = max2;
+      max2 = length;
+    } else if (length > max3) {
+      max3 = length;
+    }
+  });
+
+  return max1 * max2 * max3;
 }
 
 function solvePartTwo() {
-  return 0;
+  const distances: { distance: number; p1: string; p2: string }[] = [];
+  let circuits: string[][] = [];
+
+  for (let i = 0; i < junctions.length; i++) {
+    const key = `${junctions[i][0]},${junctions[i][1]},${junctions[i][2]}`;
+    circuits.push([key]);
+  }
+
+  for (let i = 0; i < junctions.length - 1; i++) {
+    const key1 = `${junctions[i][0]},${junctions[i][1]},${junctions[i][2]}`;
+
+    for (let j = i + 1; j < junctions.length; j++) {
+      const key2 = `${junctions[j][0]},${junctions[j][1]},${junctions[j][2]}`;
+      const distance = closestDistance(junctions[i], junctions[j]);
+
+      distances.push({ distance, p1: key1, p2: key2 });
+    }
+  }
+  distances.sort((a, b) => a.distance - b.distance);
+
+  // combine junctions until there's only one circuit starting with the closest
+  let i = 0;
+  while (circuits.length > 1) {
+    const { p1, p2 } = distances[i];
+    const { circuit1, circuit2, index1, index2 } = findCircuit(circuits, p1, p2);
+
+    if (index1 === index2) {
+      continue;
+    }
+
+    circuits = circuits.filter((value) => !value.includes(p1) && !value.includes(p2));
+    circuits.push([...circuit1, ...circuit2]);
+
+    i++;
+  }
+
+  const { p1, p2 } = distances[i - 1];
+  return Number(p1.split(",")[0]) * Number(p2.split(",")[0]);
 }
 
 const partOne = solvePartOne();
@@ -145,15 +163,3 @@ const partTwo = solvePartTwo();
 
 document.getElementById("partOne")?.appendChild(document.createTextNode(partOne.toString()));
 document.getElementById("partTwo")?.appendChild(document.createTextNode(partTwo.toString()));
-
-// 819,987,18 - 941,993,340
-// 52,470,668 - 117,168,530
-// 162,817,812 - 425,690,689 - 431,825,988 - 346,949,466
-// 906,360,560 - 805,96,715 - 739,650,466 - 862,61,35 - 984,92,344
-// 57,618,57
-// 592,479,940
-// 352,342,300
-// 466,668,158
-// 542,29,236
-// 216,146,977
-// 970,615,88
