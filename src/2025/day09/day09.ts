@@ -37,137 +37,139 @@ function solvePartOne() {
   return maxArea;
 }
 
-function buildCompressedGrid(tiles: number[][]) {
-  const uniqueX = new Set<number>([0]);
-  const uniqueY = new Set<number>([0]);
+// this compressed grid solution works for the test and real input but not for all inputs it seems.
+// leaving for future reference
+// function buildCompressedGrid(tiles: number[][]) {
+//   const uniqueX = new Set<number>([0]);
+//   const uniqueY = new Set<number>([0]);
 
-  for (const [x, y] of tiles) {
-    uniqueX.add(x);
-    uniqueY.add(y);
-  }
+//   for (const [x, y] of tiles) {
+//     uniqueX.add(x);
+//     uniqueY.add(y);
+//   }
 
-  const maxX = Math.max(...Array.from(uniqueX));
-  const maxY = Math.max(...Array.from(uniqueY));
-  uniqueX.add(maxX + 1);
-  uniqueY.add(maxY + 1);
+//   const maxX = Math.max(...Array.from(uniqueX));
+//   const maxY = Math.max(...Array.from(uniqueY));
+//   uniqueX.add(maxX + 1);
+//   uniqueY.add(maxY + 1);
 
-  const sortedX = Array.from(uniqueX).sort((a, b) => a - b);
-  const sortedY = Array.from(uniqueY).sort((a, b) => a - b);
+//   const sortedX = Array.from(uniqueX).sort((a, b) => a - b);
+//   const sortedY = Array.from(uniqueY).sort((a, b) => a - b);
 
-  const xMap = new Map<number, number>();
-  const yMap = new Map<number, number>();
+//   const xMap = new Map<number, number>();
+//   const yMap = new Map<number, number>();
 
-  sortedX.forEach((x, i) => xMap.set(x, i));
-  sortedY.forEach((y, i) => yMap.set(y, i));
+//   sortedX.forEach((x, i) => xMap.set(x, i));
+//   sortedY.forEach((y, i) => yMap.set(y, i));
 
-  const grid: number[][] = Array(sortedX.length)
-    .fill(0)
-    .map(() => Array(sortedY.length).fill(0));
+//   const grid: number[][] = Array(sortedX.length)
+//     .fill(0)
+//     .map(() => Array(sortedY.length).fill(0));
 
-  // Mark edges
-  for (let i = 0; i < tiles.length; i++) {
-    const [x1, y1] = tiles[i];
-    const [x2, y2] = tiles[(i + 1) % tiles.length];
+//   // Mark edges
+//   for (let i = 0; i < tiles.length; i++) {
+//     const [x1, y1] = tiles[i];
+//     const [x2, y2] = tiles[(i + 1) % tiles.length];
 
-    const minX = Math.min(x1, x2);
-    const maxX = Math.max(x1, x2);
-    const minY = Math.min(y1, y2);
-    const maxY = Math.max(y1, y2);
+//     const minX = Math.min(x1, x2);
+//     const maxX = Math.max(x1, x2);
+//     const minY = Math.min(y1, y2);
+//     const maxY = Math.max(y1, y2);
 
-    if (y1 === y2) {
-      // Horizontal edge
-      const yIdx = yMap.get(y1)!;
-      for (let xIdx = xMap.get(minX)!; xIdx <= xMap.get(maxX)!; xIdx++) {
-        grid[xIdx][yIdx] = 1;
-      }
-    } else {
-      // Vertical edge
-      const xIdx = xMap.get(x1)!;
-      for (let yIdx = yMap.get(minY)!; yIdx <= yMap.get(maxY)!; yIdx++) {
-        grid[xIdx][yIdx] = 1;
-      }
-    }
-  }
+//     if (y1 === y2) {
+//       // Horizontal edge
+//       const yIdx = yMap.get(y1)!;
+//       for (let xIdx = xMap.get(minX)!; xIdx <= xMap.get(maxX)!; xIdx++) {
+//         grid[xIdx][yIdx] = 1;
+//       }
+//     } else {
+//       // Vertical edge
+//       const xIdx = xMap.get(x1)!;
+//       for (let yIdx = yMap.get(minY)!; yIdx <= yMap.get(maxY)!; yIdx++) {
+//         grid[xIdx][yIdx] = 1;
+//       }
+//     }
+//   }
 
-  // Flood fill from outside (0,0)
-  const queue: [number, number][] = [[0, 0]];
-  if (grid[0][0] === 0) {
-    grid[0][0] = 2; // Mark as outside
-  }
+//   // Flood fill from outside (0,0)
+//   const queue: [number, number][] = [[0, 0]];
+//   if (grid[0][0] === 0) {
+//     grid[0][0] = 2; // Mark as outside
+//   }
 
-  while (queue.length > 0) {
-    const [x, y] = queue.shift()!;
+//   while (queue.length > 0) {
+//     const [x, y] = queue.shift()!;
 
-    for (const [dx, dy] of [
-      [0, 1],
-      [0, -1],
-      [1, 0],
-      [-1, 0],
-    ]) {
-      const nx = x + dx;
-      const ny = y + dy;
+//     for (const [dx, dy] of [
+//       [0, 1],
+//       [0, -1],
+//       [1, 0],
+//       [-1, 0],
+//     ]) {
+//       const nx = x + dx;
+//       const ny = y + dy;
 
-      if (nx >= 0 && nx < grid.length && ny >= 0 && ny < grid[0].length && grid[nx][ny] === 0) {
-        grid[nx][ny] = 2; // Mark as outside
-        queue.push([nx, ny]);
-      }
-    }
-  }
+//       if (nx >= 0 && nx < grid.length && ny >= 0 && ny < grid[0].length && grid[nx][ny] === 0) {
+//         grid[nx][ny] = 2; // Mark as outside
+//         queue.push([nx, ny]);
+//       }
+//     }
+//   }
 
-  return { grid, xMap, yMap };
-}
+//   return { grid, xMap, yMap };
+// }
 
-function isRectangleValid(
-  x1: number,
-  y1: number,
-  x2: number,
-  y2: number,
-  grid: number[][],
-  xMap: Map<number, number>,
-  yMap: Map<number, number>,
-): boolean {
-  const minX = Math.min(x1, x2);
-  const maxX = Math.max(x1, x2);
-  const minY = Math.min(y1, y2);
-  const maxY = Math.max(y1, y2);
+// function isRectangleValid(
+//   x1: number,
+//   y1: number,
+//   x2: number,
+//   y2: number,
+//   grid: number[][],
+//   xMap: Map<number, number>,
+//   yMap: Map<number, number>,
+// ): boolean {
+//   const minX = Math.min(x1, x2);
+//   const maxX = Math.max(x1, x2);
+//   const minY = Math.min(y1, y2);
+//   const maxY = Math.max(y1, y2);
 
-  const minXIdx = xMap.get(minX)!;
-  const maxXIdx = xMap.get(maxX)!;
-  const minYIdx = yMap.get(minY)!;
-  const maxYIdx = yMap.get(maxY)!;
+//   const minXIdx = xMap.get(minX)!;
+//   const maxXIdx = xMap.get(maxX)!;
+//   const minYIdx = yMap.get(minY)!;
+//   const maxYIdx = yMap.get(maxY)!;
 
-  for (let xIdx = minXIdx; xIdx <= maxXIdx; xIdx++) {
-    for (let yIdx = minYIdx; yIdx <= maxYIdx; yIdx++) {
-      if (grid[xIdx][yIdx] === 2) {
-        // If any cell is outside
-        return false;
-      }
-    }
-  }
+//   for (let xIdx = minXIdx; xIdx <= maxXIdx; xIdx++) {
+//     for (let yIdx = minYIdx; yIdx <= maxYIdx; yIdx++) {
+//       if (grid[xIdx][yIdx] === 2) {
+//         // If any cell is outside
+//         return false;
+//       }
+//     }
+//   }
 
-  return true;
-}
+//   return true;
+// }
 
-function solvePartTwo() {
-  const { grid, xMap, yMap } = buildCompressedGrid(tiles);
+// function solvePartTwo() {
+//   const { grid, xMap, yMap } = buildCompressedGrid(tiles);
 
-  let maxArea = 0;
-  for (let i = 0; i < tiles.length; i++) {
-    const [x1, y1] = tiles[i];
-    for (let j = i + 1; j < tiles.length; j++) {
-      const [x2, y2] = tiles[j];
+//   let maxArea = 0;
+//   for (let i = 0; i < tiles.length; i++) {
+//     const [x1, y1] = tiles[i];
+//     for (let j = i + 1; j < tiles.length; j++) {
+//       const [x2, y2] = tiles[j];
 
-      if (x1 === x2 || y1 === y2) continue;
+//       if (x1 === x2 || y1 === y2) continue;
 
-      if (isRectangleValid(x1, y1, x2, y2, grid, xMap, yMap)) {
-        const area = (Math.abs(x2 - x1) + 1) * (Math.abs(y2 - y1) + 1);
-        maxArea = Math.max(maxArea, area);
-      }
-    }
-  }
+//       if (isRectangleValid(x1, y1, x2, y2, grid, xMap, yMap)) {
+//         const area = (Math.abs(x2 - x1) + 1) * (Math.abs(y2 - y1) + 1);
+//         maxArea = Math.max(maxArea, area);
+//       }
+//     }
+//   }
 
-  return maxArea;
-}
+//   return maxArea;
+// }
 
 type VerticalEdge = {
   x: number;
