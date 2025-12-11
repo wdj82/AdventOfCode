@@ -1,7 +1,19 @@
 // Advent of Code day 11
 // https://adventofcode.com/2025/day/11
 
-import { rawInput } from "./rawInput";
+// import { rawInput } from "./rawInput";
+
+// for part one
+const rawInput = `aaa: you hhh
+you: bbb ccc
+bbb: ddd eee
+ccc: ddd eee fff
+ddd: ggg
+eee: out
+fff: out
+ggg: out
+hhh: ccc fff iii
+iii: out`;
 
 // const rawInput = `svr: aaa bbb
 // aaa: fft
@@ -53,10 +65,9 @@ function reverseGraph() {
   const rev = new Map<string, string[]>();
   devices.forEach((list, key) => {
     list.forEach((v) => {
-      if (!rev.has(v)) {
-        rev.set(v, []);
-      }
-      rev.get(v)!.push(key);
+      const nodes = rev.get(v) ?? [];
+      nodes.push(key);
+      rev.set(v, nodes);
     });
   });
   return rev;
@@ -82,9 +93,8 @@ function computeReachable(start: string, graph: Map<string, string[]>) {
 function solvePartTwo() {
   const memo = new Map<string, number>();
 
-  // calculate nodes that can reach out, dac, and fft from reverse
+  // get all the nodes that can reach 'dac' or 'fft'
   const reverse = reverseGraph();
-  const canReachOut = computeReachable("out", reverse);
   const canReachDAC = computeReachable("dac", reverse);
   const canReachFFT = computeReachable("fft", reverse);
 
@@ -92,13 +102,8 @@ function solvePartTwo() {
     if (node === "dac") hasDAC = true;
     if (node === "fft") hasFFT = true;
 
-    // the node must be able to reach the end
-    if (!canReachOut.has(node)) return 0;
-
-    // prune if this node can never reach dac
+    // prune if this node can never reach dac or fft
     if (!hasDAC && !canReachDAC.has(node)) return 0;
-
-    // prune if this node can never reach fft
     if (!hasFFT && !canReachFFT.has(node)) return 0;
 
     if (node === "out") {
